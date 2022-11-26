@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  selenoid:
+    image: "aerokube/selenoid:latest-release"
+    container_name: selenoid
+    restart: always
+    ports:
+      - "4444:4444"
+    volumes:
+      - "$PWD/selenoid/browsers.json:/etc/selenoid/browsers.json"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      # - "$PWD/selenoid/logs:/opt/selenoid/logs"
+    command: ["-conf", "/etc/selenoid/browsers.json",
+              "-limit", "20",
+              "-service-startup-timeout", "240s",
+              "-session-attempt-timeout", "240s",
+              "-session-delete-timeout", "240s",
+              "-timeout", "240s",
+              # "-save-all-logs",
+              # "-log-output-dir", "/opt/selenoid/logs"
+              ]
+    network_mode: bridge
+#    networks:
+#      testing_net:
+#        ipv4_address: 172.28.1.1
+
+  selenoid-ui:
+    image: "aerokube/selenoid-ui:latest-release"
+    container_name: selenoid-ui
+    restart: always
+    links:
+      - selenoid
+    ports:
+      - "8080:8080"
+    command: ["--selenoid-uri", "http://selenoid:4444"]
+    # command: ["--selenoid-uri", "http://192.168.1.114:4444"] # !!!!! IP к которому цеплятся !!!!
+    network_mode: bridge
+#    networks:
+#      testing_net:
+#        ipv4_address: 172.28.1.2
+
+#networks:`
+#  testing_net:
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.28.0.0/16
